@@ -705,35 +705,59 @@
     </footer>
 
     <script>
-        // Parallax scroll for email fragments
-        const fragments = document.querySelectorAll('.parallax-slow');
-        let ticking = false;
-        window.addEventListener('scroll', () => {
-            if (!ticking) {
-                requestAnimationFrame(() => {
-                    const scrollY = window.scrollY;
-                    fragments.forEach((frag, i) => {
-                        const speed = 0.15 + (i * 0.03);
-                        const yOffset = scrollY * speed;
-                        const xDrift = Math.sin(scrollY * 0.002 + i) * 8;
-                        frag.style.transform = `translateY(${-yOffset}px) translateX(${xDrift}px)`;
-                        // Fade out as user scrolls past hero
-                        const opacity = Math.max(0, 0.6 - (scrollY / 1000));
-                        frag.style.opacity = opacity;
+        // QA mode: ?qa in URL skips all animations, shows final state
+        const isQA = new URLSearchParams(window.location.search).has('qa');
+
+        if (isQA) {
+            // Force all reveals visible immediately
+            document.querySelectorAll('.reveal').forEach(el => {
+                el.classList.add('visible');
+                el.style.transition = 'none';
+            });
+            // Force all hero animations to final state
+            document.querySelectorAll('[style*="animation"]').forEach(el => {
+                el.style.animation = 'none';
+                el.style.opacity = '1';
+            });
+            // Hide parallax fragments (they're background decoration)
+            document.querySelectorAll('.email-fragment').forEach(el => {
+                el.style.opacity = '0.6';
+                el.style.animation = 'none';
+            });
+        }
+
+        if (!isQA) {
+            // Parallax scroll for email fragments
+            const fragments = document.querySelectorAll('.parallax-slow');
+            let ticking = false;
+            window.addEventListener('scroll', () => {
+                if (!ticking) {
+                    requestAnimationFrame(() => {
+                        const scrollY = window.scrollY;
+                        fragments.forEach((frag, i) => {
+                            const speed = 0.15 + (i * 0.03);
+                            const yOffset = scrollY * speed;
+                            const xDrift = Math.sin(scrollY * 0.002 + i) * 8;
+                            frag.style.transform = `translateY(${-yOffset}px) translateX(${xDrift}px)`;
+                            const opacity = Math.max(0, 0.6 - (scrollY / 1000));
+                            frag.style.opacity = opacity;
+                        });
+                        ticking = false;
                     });
-                    ticking = false;
-                });
-                ticking = true;
-            }
-        });
+                    ticking = true;
+                }
+            });
+        }
 
         const reveals = document.querySelectorAll('.reveal');
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) entry.target.classList.add('visible');
-            });
-        }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
-        reveals.forEach(el => observer.observe(el));
+        if (!isQA) {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) entry.target.classList.add('visible');
+                });
+            }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+            reveals.forEach(el => observer.observe(el));
+        }
 
         // Brevo form submission (no API key in client code)
         const BREVO_FORM_URL = 'https://94074b42.sibforms.com/serve/MUIFAGXO4qZKRCuc7rtjaD6jL9oV-X1CWvKBufvey3k7R5dHucnNFvtBLCufCduytpd3TX53dduHG-pqiWFW0u6N_5pfFs1DmOxyrpaB45kYQ2B8UrtMwIL7cYNexfHfVWxrZciD6sNvqJV5VT2r6akuRkLA_c6nHulJj8yI45yHA-UN8vyoXOuXswvSNfI48ONRY8E0hUPfGpsYbg==';
