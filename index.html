@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debriefer</title>
+    <meta name="description" content="Turn years of email into a clear project narrative. AI-powered timelines, executive summaries, and onboarding briefs from your communication archives.">
+    <meta property="og:title" content="Debriefer">
+    <meta property="og:description" content="The people with the most institutional knowledge are the ones least likely to have time to organize it.">
+    <meta property="og:type" content="website">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <!-- Meta Pixel: replace 1253681319867385 -->
+    <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1253681319867385');
+    fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=1253681319867385&ev=PageView&noscript=1"/></noscript>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0f0d;
+            --surface: #121a16;
+            --surface-hover: #1a241e;
+            --border: rgba(16, 185, 129, 0.08);
+            --border-hover: rgba(16, 185, 129, 0.2);
+            --text: #e4e8e6;
+            --text-muted: #8a9690;
+            --text-dim: #5a6660;
+            --accent: #10b981;
+            --accent-bright: #34d399;
+            --accent-dim: #059669;
+            --radius: 12px;
+            --radius-sm: 8px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'DM Sans', 'Segoe UI', sans-serif;
+            font-size: 1.0625rem;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 9999;
+            mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+            background-size: 256px 256px;
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .hero > *:not(.hero-bg) {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-weight: 400;
+            letter-spacing: -0.02em;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards 0.3s;
+        }
+
+        .hero .tagline {
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            color: var(--text-muted);
+            max-width: 560px;
+            margin-bottom: 2.5rem;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards 0.6s;
+        }
+
+        .hero-form-wrap {
+            opacity: 0;
+            animation: fadeIn 1s ease forwards 0.9s;
+            width: 100%;
+            max-width: 460px;
+        }
+
+        @keyframes fadeIn { to { opacity: 1; } }
+
+        /* Floating email fragments - parallax background */
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .email-fragment {
+            position: absolute;
+            background: var(--surface);
+            border: 1px solid rgba(16, 185, 129, 0.15);
+            border-radius: var(--radius-sm);
+            padding: 0.75rem 1rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            max-width: 220px;
+            opacity: 0;
+            animation: floatIn 2s ease forwards;
+            pointer-events: none;
+            font-family: 'DM Sans', monospace;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .email-fragment .frag-from {
+            color: var(--accent);
+            font-weight: 500;
+            margin-bottom: 2px;
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .email-fragment .frag-date {
+            color: var(--text-dim);
+            font-size: 0.55rem;
+            opacity: 0.7;
+            margin-bottom: 4px;
+        }
+
+        @keyframes floatIn {
+            from { opacity: 0; transform: translateY(30px) scale(0.97); }
+            to { opacity: 0.6; transform: translateY(0) scale(1); }
+        }
+
+        /* Stagger the fragments — 12 total */
+        .email-fragment:nth-child(1) { top: 5%; left: 4%; animation-delay: 0.3s; }
+        .email-fragment:nth-child(2) { top: 12%; right: 5%; animation-delay: 0.7s; }
+        .email-fragment:nth-child(3) { top: 28%; left: 2%; animation-delay: 1.1s; }
+        .email-fragment:nth-child(4) { top: 38%; right: 3%; animation-delay: 1.5s; }
+        .email-fragment:nth-child(5) { top: 52%; left: 5%; animation-delay: 1.9s; }
+        .email-fragment:nth-child(6) { top: 60%; right: 6%; animation-delay: 2.3s; }
+        .email-fragment:nth-child(7) { top: 72%; left: 3%; animation-delay: 2.7s; }
+        .email-fragment:nth-child(8) { top: 80%; right: 4%; animation-delay: 3.1s; }
+        .email-fragment:nth-child(9) { top: 18%; left: 7%; animation-delay: 0.5s; max-width: 180px; }
+        .email-fragment:nth-child(10) { top: 45%; right: 8%; animation-delay: 1.3s; max-width: 190px; }
+        .email-fragment:nth-child(11) { top: 65%; left: 6%; animation-delay: 2.1s; max-width: 200px; }
+        .email-fragment:nth-child(12) { top: 85%; right: 7%; animation-delay: 2.9s; max-width: 180px; }
+
+        /* Parallax scroll effect */
+        .parallax-slow { will-change: transform; }
+
+        /* Timeline preview embed */
+        .preview-section {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 100px 2rem;
+            text-align: center;
+        }
+
+        .preview-frame {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-top: 2rem;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3), 0 0 60px rgba(16, 185, 129, 0.05);
+            transition: box-shadow 0.4s;
+        }
+
+        .preview-frame:hover {
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4), 0 0 80px rgba(16, 185, 129, 0.08);
+        }
+
+        .preview-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 14px;
+            background: rgba(16, 185, 129, 0.04);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .preview-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--text-dim);
+            opacity: 0.3;
+        }
+
+        .preview-dot:first-child { background: #ef4444; opacity: 0.6; }
+        .preview-dot:nth-child(2) { background: #eab308; opacity: 0.6; }
+        .preview-dot:nth-child(3) { background: var(--accent); opacity: 0.6; }
+
+        .preview-url {
+            margin-left: 12px;
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            background: rgba(255,255,255,0.04);
+            padding: 3px 10px;
+            border-radius: 4px;
+            flex: 1;
+        }
+
+        .preview-frame iframe {
+            width: 100%;
+            height: 500px;
+            border: none;
+        }
+
+        @media (max-width: 600px) {
+            .email-fragment { display: none; }
+            .preview-frame iframe { height: 350px; }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                        transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        section {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 140px 2rem;
+        }
+
+        h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 2rem;
+            font-weight: 400;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        p { margin-bottom: 1.5em; color: var(--text-muted); }
+        p strong { color: var(--text); }
+
+        .divider {
+            width: 60px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent-bright), transparent);
+            margin: 0 auto;
+        }
+
+        .tier {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        .tier:hover { border-color: var(--border-hover); transform: translateX(3px); box-shadow: 0 2px 12px rgba(16, 185, 129, 0.1); }
+
+        .tier-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 500;
+            color: var(--accent);
+            margin-bottom: 0.4rem;
+        }
+
+        .tier-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.6rem;
+        }
+
+        .tier p { font-size: 0.95rem; margin-bottom: 0; }
+
+        .quote-block {
+            border-left: 3px solid var(--accent-bright);
+            padding: 1.5rem 2rem;
+            margin: 2rem 0;
+            background: rgba(16, 185, 129, 0.06);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        }
+
+        .quote-block p {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 1.15rem;
+            font-style: italic;
+            color: var(--text);
+            margin-bottom: 0;
+        }
+
+        .sample-link {
+            display: inline-block;
+            padding: 14px 32px;
+            background: transparent;
+            border: 1px solid var(--accent-dim);
+            border-radius: var(--radius-sm);
+            color: var(--accent);
+            font-family: inherit;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: background 0.25s, border-color 0.25s;
+            margin-top: 1rem;
+        }
+        .sample-link:hover { background: rgba(212, 168, 83, 0.08); border-color: var(--accent); }
+
+        .email-form {
+            display: flex;
+            gap: 0.75rem;
+            max-width: 440px;
+            margin: 0 auto;
+        }
+
+        .email-form input[type="email"] {
+            flex: 1;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: var(--radius-sm);
+            color: #1a1a1a;
+            font-family: inherit;
+            font-size: 0.9375rem;
+            outline: none;
+            transition: box-shadow 0.3s;
+        }
+        .email-form input[type="email"]:focus { box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3); }
+        .email-form input[type="email"]::placeholder { color: #999; }
+
+        .email-form button {
+            padding: 14px 28px;
+            background: var(--accent);
+            color: var(--bg);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            letter-spacing: 0.03em;
+            cursor: pointer;
+            transition: background 0.25s, transform 0.2s;
+            white-space: nowrap;
+        }
+        .email-form button:hover { background: var(--accent-bright); transform: translateY(-1px); }
+
+        .form-note {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 0.75rem;
+            text-align: center;
+        }
+
+        .success-message {
+            display: none;
+            padding: 1.5rem;
+            background: var(--surface);
+            border: 1px solid var(--accent-bright);
+            border-radius: var(--radius);
+            color: var(--accent-bright);
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .trust-line {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .trust-item {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .trust-item .icon {
+            color: var(--accent-dim);
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            border-top: 1px solid rgba(16, 185, 129, 0.06);
+        }
+
+        @media (max-width: 600px) {
+            section { padding: 80px 1.25rem; }
+            .email-form { flex-direction: column; }
+            .email-form button { width: 100%; padding: 16px; }
+            .trust-line { flex-direction: column; align-items: center; gap: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-bg">
+            <div class="email-fragment parallax-slow">
+                <div class="frag-from">From: Project Lead</div>
+                <div class="frag-date">Aug 9, 2020</div>
+                The team is going to do a deep dive into the data errors...
+            </div>
+            <div class="email-fragment parallax-slow">
+                <div class="frag-from">From: Data Director</div>
+                <div class="frag-date">Jul 19, 2021</div>
+                The default join IS an inner join. This means it will only return...
+            </div>
+            <div class="email-fragment parallax-slow">
+                <div class="frag-from">From: Contract Manager</div>
+                <div class="frag-date">Sep 22, 2020</div>
+                Can we connect to talk about the data pull? I think we need to...
+            </div>
+            <div class="email-fragment parallax-slow">
+                <div class="frag-from">From: Senior Statistician</div>
+                <div class="frag-date">Sep 21, 2020</div>
+                My conclusion is that the previous analyst only pulled one of four record types...
+            </div>
+            <div class="email-fragment parallax-slow">
+                <div class="frag-from">From: Research Analyst</div>
+                <div class="frag-date">Aug 7, 2020</div>
+                The new files show normal-looking numbers for 2021 now, confirming...
+            </div>
+            <div class="email-fragment parallax-slow">
+                <div class="frag-from">From: Contract Manager</div>
+                <div class="frag-date">Jul 24, 2021</div>
+                We should implement blind parallel processing for all contracts...
+            </div>
+            <div class="email-fragment parallax-slow">
+                <div class="frag-from">From: Data Broker Lead</div>
+                <div class="frag-date">May 17, 2020</div>
+                I don't really know what the previous analyst provided you in the past...
+            </div>
+            <div class="email-fragment parallax-slow">
+                <div class="frag-from">From: Project Lead</div>
+                <div class="frag-date">Apr 24, 2021</div>
+                We'll be using the 5 Whys approach to guide the conversation tomorrow...
+            </div>
+            <div class="email-fragment parallax-slow">
+                <div class="frag-from">From: Program Manager</div>
+                <div class="frag-date">Mar 5, 2021</div>
+                Please see the agenda for tomorrow's working group meeting...
+            </div>
+            <div class="email-fragment parallax-slow">
+                <div class="frag-from">From: Epidemiologist</div>
+                <div class="frag-date">Sep 12, 2020</div>
+                I had all the data sets needed for the trend analysis for the latest period...
+            </div>
+            <div class="email-fragment parallax-slow">
+                <div class="frag-from">From: Data Director</div>
+                <div class="frag-date">Nov 6, 2020</div>
+                Do you have the record type and category variables broken out by year?
+            </div>
+            <div class="email-fragment parallax-slow">
+                <div class="frag-from">From: Research Analyst</div>
+                <div class="frag-date">Mar 16, 2021</div>
+                There is no need to restrict to any one record type unless there is a specific...
+            </div>
+        </div>
+        <h1>Debriefer</h1>
+        <p class="tagline">Turn years of email into a clear project narrative. Interactive timelines, executive summaries, and onboarding briefs — delivered in 24 hours.</p>
+        <div class="hero-form-wrap">
+            <form class="email-form" id="hero-form">
+                <input type="email" placeholder="your@email.com" required>
+                <button type="submit">See a Sample</button>
+            </form>
+            <p class="form-note">Get a free de-identified sample timeline. No spam, unsubscribe anytime.</p>
+        </div>
+    </div>
+
+    <!-- PROBLEM -->
+    <section>
+        <h2 class="reveal">The Problem</h2>
+        <div class="quote-block reveal">
+            <p>The people with the most institutional knowledge have the least time to organize it.</p>
+        </div>
+        <p class="reveal">You've been on this project for years. The history lives in thousands of emails — decisions, discoveries, problems solved, lessons learned. <strong>But nobody can search through 3,000 emails to understand what happened.</strong></p>
+        <p class="reveal">New team member? They spend weeks piecing together context. Stakeholder wants a status update? You reconstruct it from memory. Someone leaves? Their knowledge walks out the door.</p>
+        <p class="reveal">The archive exists. The narrative doesn't.</p>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- SOLUTION -->
+    <section>
+        <h2 class="reveal">What Debriefer Does</h2>
+        <p class="reveal">You export your email folder. We turn it into a <strong>complete project intelligence package</strong> — an interactive timeline, executive summary, key stakeholder map, and critical document index. De-identified if needed. Branded to your organization. Delivered as files you own.</p>
+        <p class="reveal">An AI reads every email, identifies the narrative arc, extracts the key decisions and turning points, and produces professional deliverables that would take a human analyst weeks to create.</p>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- LIVE PREVIEW -->
+    <div class="preview-section">
+        <h2 class="reveal">See the Output</h2>
+        <p class="reveal" style="color: var(--text-muted); max-width: 560px; margin: 0 auto;">This interactive timeline was generated from 707 de-identified emails spanning 18 months. Names replaced with roles. No sensitive data transmitted or stored.</p>
+        <div class="preview-frame reveal">
+            <div class="preview-toolbar">
+                <div class="preview-dot"></div>
+                <div class="preview-dot"></div>
+                <div class="preview-dot"></div>
+                <div class="preview-url">debriefer.io/sample</div>
+            </div>
+            <iframe src="/sample.html" loading="lazy" title="Sample Timeline"></iframe>
+        </div>
+        <p class="reveal" style="margin-top: 1.5rem;"><a href="/sample.html" class="sample-link" target="_blank">Open Full Screen</a></p>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- HOW IT WORKS -->
+    <section>
+        <h2 class="reveal">How It Works</h2>
+
+        <div class="tier reveal">
+            <div class="tier-label">Step 1</div>
+            <div class="tier-title">Export Your Email</div>
+            <p>Export the relevant email folder from Outlook as a CSV or PST file. Your data stays on your machine until you're ready. We provide a free de-identification tool that strips names and organizations before upload — your sensitive information never leaves your computer.</p>
+        </div>
+
+        <div class="tier reveal">
+            <div class="tier-label">Step 2</div>
+            <div class="tier-title">We Process It</div>
+            <p>Our AI parses every email — dates, participants, decisions, problems, resolutions. It identifies distinct projects within your archive, maps the narrative arc of each one, and generates your deliverables. Typical turnaround: 24 hours.</p>
+        </div>
+
+        <div class="tier reveal">
+            <div class="tier-label">Step 3</div>
+            <div class="tier-title">You Get the Full Picture</div>
+            <p>Receive an interactive HTML timeline, a Word document with executive summary, a stakeholder map, and a critical document index. Host the timeline on your own site or share it directly. You own everything we produce.</p>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- USE CASES -->
+    <section>
+        <h2 class="reveal">Who Uses This</h2>
+
+        <div class="tier reveal">
+            <div class="tier-label">Onboarding</div>
+            <div class="tier-title">New Hire on Day One</div>
+            <p>Instead of two weeks reading email chains, your new team member gets the full project history in an hour. Critical context, key people, active workstreams, and institutional landmines — the things nobody thinks to warn them about.</p>
+        </div>
+
+        <div class="tier reveal">
+            <div class="tier-label">Compliance</div>
+            <div class="tier-title">Contract Deliverable Summary</div>
+            <p>Show funders, auditors, or leadership exactly what was produced under a contract. Every report, study, and data deliverable mapped on a timeline with status and stakeholders.</p>
+        </div>
+
+        <div class="tier reveal">
+            <div class="tier-label">Incident Response</div>
+            <div class="tier-title">What Happened and When</div>
+            <p>Reconstruct the full story of an incident from the email trail. Who knew what, when they knew it, what decisions were made, and how it was resolved. The debrief writes itself.</p>
+        </div>
+
+        <div class="tier reveal">
+            <div class="tier-label">Knowledge Transfer</div>
+            <div class="tier-title">Before Someone Leaves</div>
+            <p>A departing team member's email archive contains years of undocumented institutional knowledge. Capture it before it walks out the door.</p>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- TRUST -->
+    <section style="text-align: center;">
+        <h2 class="reveal">Your Data, Your Control</h2>
+        <p class="reveal">We provide a local de-identification tool that runs on your machine. It replaces names, email addresses, and organization names with role-based labels before you upload anything. <strong>Your real data never leaves your computer.</strong></p>
+        <p class="reveal">After processing, we deliver your files and delete everything. No data is retained. No accounts to manage. No subscription required.</p>
+        <div class="trust-line reveal">
+            <div class="trust-item"><span class="icon">&#9670;</span> Local de-identification</div>
+            <div class="trust-item"><span class="icon">&#9670;</span> Data deleted after delivery</div>
+            <div class="trust-item"><span class="icon">&#9670;</span> You own the output</div>
+        </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- PRICING -->
+    <section style="text-align: center;">
+        <h2 class="reveal">Early Access</h2>
+        <p class="reveal"><strong>$199</strong> per project for the first 10 customers. Upload your email export, receive your complete project intelligence package within 24 hours.</p>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- BOTTOM CTA -->
+    <section style="text-align: center;">
+        <h2 class="reveal">See What's in Your Archive</h2>
+        <p class="reveal">Sign up to receive a free sample timeline — built from a real (de-identified) project spanning 707 emails over 18 months.</p>
+        <form class="email-form reveal" id="signup-form">
+            <input type="email" placeholder="your@email.com" required id="email-input">
+            <button type="submit">Get the Sample</button>
+        </form>
+        <p class="form-note">Free. No credit card. Unsubscribe anytime.</p>
+        <div class="success-message" id="success-msg">Check your inbox — the sample timeline is on its way.</div>
+    </section>
+
+    <footer>
+        <p style="margin-bottom: 0.75rem;">Debriefer</p>
+        <p style="font-size: 0.7rem;"><a href="/terms.html" style="color: var(--text-dim); text-decoration: none; border-bottom: 1px solid var(--text-dim);">Terms of Use</a> &nbsp;&middot;&nbsp; <a href="mailto:hello@debriefer.ai" style="color: var(--text-dim); text-decoration: none; border-bottom: 1px solid var(--text-dim);">Contact</a></p>
+    </footer>
+
+    <script>
+        // Parallax scroll for email fragments
+        const fragments = document.querySelectorAll('.parallax-slow');
+        let ticking = false;
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    const scrollY = window.scrollY;
+                    fragments.forEach((frag, i) => {
+                        const speed = 0.15 + (i * 0.03);
+                        const yOffset = scrollY * speed;
+                        const xDrift = Math.sin(scrollY * 0.002 + i) * 8;
+                        frag.style.transform = `translateY(${-yOffset}px) translateX(${xDrift}px)`;
+                        // Fade out as user scrolls past hero
+                        const opacity = Math.max(0, 0.6 - (scrollY / 1000));
+                        frag.style.opacity = opacity;
+                    });
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+
+        const reveals = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('visible');
+            });
+        }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+        reveals.forEach(el => observer.observe(el));
+
+        // Brevo form submission (no API key in client code)
+        const BREVO_FORM_URL = 'https://94074b42.sibforms.com/serve/MUIFAGXO4qZKRCuc7rtjaD6jL9oV-X1CWvKBufvey3k7R5dHucnNFvtBLCufCduytpd3TX53dduHG-pqiWFW0u6N_5pfFs1DmOxyrpaB45kYQ2B8UrtMwIL7cYNexfHfVWxrZciD6sNvqJV5VT2r6akuRkLA_c6nHulJj8yI45yHA-UN8vyoXOuXswvSNfI48ONRY8E0hUPfGpsYbg==';
+
+        document.querySelectorAll('.email-form').forEach(form => {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const emailInput = this.querySelector('input[type="email"]');
+                const email = emailInput.value;
+                const button = this.querySelector('button');
+                button.textContent = 'Sending...';
+                button.disabled = true;
+
+                try {
+                    const formData = new FormData();
+                    formData.append('EMAIL', email);
+
+                    const response = await fetch(BREVO_FORM_URL, {
+                        method: 'POST',
+                        body: formData,
+                        mode: 'no-cors'
+                    });
+
+                    // no-cors means we can't read the response, but the submission goes through
+                    if (typeof fbq !== 'undefined') fbq('track', 'Lead');
+                    const bottomForm = document.getElementById('signup-form');
+                    const successMsg = document.getElementById('success-msg');
+                    if (this === bottomForm) {
+                        this.style.display = 'none';
+                        this.nextElementSibling.style.display = 'none';
+                        successMsg.style.display = 'block';
+                    } else {
+                        this.innerHTML = '<p style="color:var(--accent-bright); margin:0;">Check your inbox — Harold the Badger is on his way with your sample.</p>';
+                    }
+                } catch (err) {
+                    button.textContent = 'Try again';
+                    button.disabled = false;
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

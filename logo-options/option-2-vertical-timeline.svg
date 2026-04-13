@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 64">
+  <!-- Option 2: Vertical timeline bar with dots — clean and minimal -->
+  <g transform="translate(12, 6)">
+    <!-- Vertical line -->
+    <line x1="16" y1="4" x2="16" y2="48" stroke="#10b981" stroke-width="2" opacity="0.3"/>
+    <!-- Dots at different positions -->
+    <circle cx="16" cy="8" r="4" fill="#10b981" opacity="0.4"/>
+    <circle cx="16" cy="22" r="4" fill="#10b981" opacity="0.65"/>
+    <circle cx="16" cy="36" r="4" fill="#10b981" opacity="0.9"/>
+    <!-- Small horizontal lines suggesting content -->
+    <line x1="24" y1="8" x2="38" y2="8" stroke="#e4e8e6" stroke-width="1.5" opacity="0.2"/>
+    <line x1="24" y1="22" x2="42" y2="22" stroke="#e4e8e6" stroke-width="1.5" opacity="0.35"/>
+    <line x1="24" y1="36" x2="40" y2="36" stroke="#e4e8e6" stroke-width="1.5" opacity="0.5"/>
+  </g>
+  <text x="58" y="40" font-family="system-ui, -apple-system, sans-serif" font-size="30" font-weight="600" fill="#e4e8e6" letter-spacing="-0.5">debriefer<tspan font-weight="300" fill="#10b981">.io</tspan></text>
+</svg>

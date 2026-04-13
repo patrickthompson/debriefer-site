@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html><head>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body { margin: 0; padding: 0; background: #000; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+.ad { width: 1080px; height: 1080px; background: #0a0f0d; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+
+.content { text-align: center; max-width: 780px; padding: 0 60px; }
+
+.before-after { display: flex; gap: 60px; align-items: center; justify-content: center; margin-bottom: 50px; }
+
+.before, .after { text-align: center; flex: 1; }
+
+.icon-area { margin-bottom: 20px; }
+
+/* Inbox chaos icon */
+.inbox-lines { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+.inbox-line { height: 3px; background: #5a6660; border-radius: 2px; opacity: 0.4; }
+.inbox-line:nth-child(1) { width: 120px; transform: rotate(-1deg); }
+.inbox-line:nth-child(2) { width: 100px; transform: rotate(0.5deg); }
+.inbox-line:nth-child(3) { width: 130px; transform: rotate(-0.8deg); }
+.inbox-line:nth-child(4) { width: 90px; transform: rotate(1.2deg); }
+.inbox-line:nth-child(5) { width: 110px; transform: rotate(-0.3deg); }
+.inbox-line:nth-child(6) { width: 95px; transform: rotate(0.7deg); }
+.inbox-line:nth-child(7) { width: 115px; transform: rotate(-1.5deg); }
+.inbox-line:nth-child(8) { width: 85px; transform: rotate(0.4deg); }
+
+/* Timeline icon */
+.timeline-icon { display: flex; flex-direction: column; gap: 16px; align-items: flex-start; padding-left: 30px; }
+.tl-row { display: flex; align-items: center; gap: 12px; }
+.tl-dot { width: 12px; height: 12px; border-radius: 50%; background: #10b981; }
+.tl-dot.d1 { opacity: 0.4; }
+.tl-dot.d2 { opacity: 0.6; }
+.tl-dot.d3 { opacity: 0.8; }
+.tl-dot.d4 { opacity: 1.0; }
+.tl-line-v { width: 2px; height: 12px; background: #10b981; opacity: 0.3; margin-left: 5px; }
+.tl-bar { height: 3px; border-radius: 2px; background: #e4e8e6; }
+.tl-bar.b1 { width: 80px; opacity: 0.3; }
+.tl-bar.b2 { width: 100px; opacity: 0.4; }
+.tl-bar.b3 { width: 70px; opacity: 0.5; }
+.tl-bar.b4 { width: 90px; opacity: 0.6; }
+
+.arrow { font-size: 48px; color: #10b981; opacity: 0.6; }
+
+.label { font-family: 'DM Sans', sans-serif; font-size: 18px; color: #5a6660; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 16px; }
+.label.active { color: #10b981; }
+
+.line { width: 60px; height: 2px; background: #10b981; opacity: 0.4; margin: 0 auto 40px; }
+
+.headline { font-family: 'Playfair Display', serif; color: #e4e8e6; font-size: 42px; line-height: 1.4; margin-bottom: 24px; }
+.subtext { font-family: 'DM Sans', sans-serif; color: #8a9690; font-size: 22px; }
+
+.footer { position: absolute; bottom: 40px; font-family: 'DM Sans', sans-serif; font-size: 20px; color: #10b981; letter-spacing: 0.05em; font-weight: 500; }
+</style></head><body>
+<div class="ad">
+    <div class="content">
+        <div class="before-after">
+            <div class="before">
+                <div class="icon-area">
+                    <div class="inbox-lines">
+                        <div class="inbox-line"></div>
+                        <div class="inbox-line"></div>
+                        <div class="inbox-line"></div>
+                        <div class="inbox-line"></div>
+                        <div class="inbox-line"></div>
+                        <div class="inbox-line"></div>
+                        <div class="inbox-line"></div>
+                        <div class="inbox-line"></div>
+                    </div>
+                </div>
+                <div class="label">3,000 emails</div>
+            </div>
+            <div class="arrow">→</div>
+            <div class="after">
+                <div class="icon-area">
+                    <div class="timeline-icon">
+                        <div class="tl-row"><div class="tl-dot d1"></div><div class="tl-bar b1"></div></div>
+                        <div class="tl-row"><div class="tl-dot d2"></div><div class="tl-bar b2"></div></div>
+                        <div class="tl-row"><div class="tl-dot d3"></div><div class="tl-bar b3"></div></div>
+                        <div class="tl-row"><div class="tl-dot d4"></div><div class="tl-bar b4"></div></div>
+                    </div>
+                </div>
+                <div class="label active">One clear timeline</div>
+            </div>
+        </div>
+        <div class="line"></div>
+        <div class="headline">Your email archive has a story.<br>We find it.</div>
+        <div class="subtext">Interactive timelines from email. Delivered in 24 hours.</div>
+    </div>
+    <div class="footer">debriefer.io</div>
+</div>
+</body></html>

@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debriefer Sample — Tracking Down the Source</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0f0d;--surface:#111916;--surface2:#162019;--border:#1e2e26;
+  --emerald:#10b981;--emerald-bright:#34d399;--emerald-dim:#059669;
+  --text:#e2e8e4;--text-dim:#8a9b91;--text-muted:#5a6b61;
+  --red:#ef4444;--blue:#3b82f6;--purple:#a78bfa;--amber:#f59e0b;
+  --pink:#ec4899;--teal:#14b8a6;--indigo:#8b5cf6;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+h1,h2,h3{font-family:'Playfair Display',serif;font-weight:700}
+
+/* Hero */
+.hero{text-align:center;padding:4rem 1.5rem 3rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(16,185,129,.08) 0%,transparent 70%);pointer-events:none}
+.hero h1{font-size:clamp(2rem,5vw,3.2rem);color:var(--emerald-bright);margin-bottom:.5rem;position:relative}
+.hero .subtitle{font-size:clamp(1rem,2.5vw,1.25rem);color:var(--text-dim);max-width:600px;margin:0 auto;position:relative}
+
+/* Containers */
+.container{max-width:900px;margin:0 auto;padding:0 1.5rem}
+
+/* Character Key */
+.character-key{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem 2rem;margin:0 auto 2.5rem;max-width:900px}
+.character-key h2{font-size:1.1rem;color:var(--emerald);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.08em;font-family:'DM Sans',sans-serif;font-weight:700}
+.char-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:.75rem}
+.char-item{display:flex;align-items:center;gap:.6rem;padding:.4rem .5rem;border-radius:8px;transition:background .2s}
+.char-item:hover{background:var(--surface2)}
+.char-item .char-name{font-weight:700;font-size:.85rem;white-space:nowrap}
+.char-item .char-desc{font-size:.72rem;color:var(--text-dim);line-height:1.3}
+
+/* Executive Summary */
+.exec-summary{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem;margin:0 auto 2.5rem;max-width:900px}
+.exec-summary h2{font-size:1.3rem;color:var(--emerald-bright);margin-bottom:1rem}
+.exec-summary ul{list-style:none;padding:0}
+.exec-summary li{position:relative;padding-left:1.5rem;margin-bottom:.75rem;color:var(--text);font-size:.95rem;line-height:1.5}
+.exec-summary li::before{content:'';position:absolute;left:0;top:.55em;width:8px;height:8px;border-radius:50%;background:var(--emerald)}
+
+/* Filters */
+.filters{display:flex;justify-content:center;gap:.5rem;margin:0 auto 2rem;flex-wrap:wrap;max-width:900px;padding:0 1.5rem}
+.filter-btn{background:var(--surface);border:1px solid var(--border);color:var(--text-dim);padding:.45rem 1.1rem;border-radius:20px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.85rem;transition:all .25s}
+.filter-btn:hover{border-color:var(--emerald-dim);color:var(--text)}
+.filter-btn.active{background:var(--emerald);border-color:var(--emerald);color:var(--bg);font-weight:700}
+
+/* Timeline */
+.timeline{position:relative;padding:1rem 0 3rem;max-width:900px;margin:0 auto}
+.timeline::before{content:'';position:absolute;left:28px;top:0;bottom:0;width:2px;background:linear-gradient(to bottom,var(--emerald-dim),var(--border) 30%,var(--border) 70%,var(--emerald-dim))}
+
+.tl-phase{margin-bottom:1.5rem}
+.tl-phase-label{display:inline-flex;align-items:center;gap:.4rem;margin-left:50px;margin-bottom:.75rem;padding:.25rem .8rem;border-radius:6px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
+.tl-phase-label.discovery{background:rgba(16,185,129,.12);color:var(--emerald)}
+.tl-phase-label.escalation{background:rgba(239,68,68,.12);color:var(--red)}
+.tl-phase-label.investigation{background:rgba(59,130,246,.12);color:var(--blue)}
+.tl-phase-label.resolution{background:rgba(52,211,153,.12);color:var(--emerald-bright)}
+
+/* Timeline Card */
+.tl-item{position:relative;padding-left:58px;margin-bottom:1rem;opacity:1;max-height:2000px;transition:opacity .35s,max-height .4s,margin .35s}
+.tl-item.hidden{opacity:0;max-height:0;margin-bottom:0;overflow:hidden;pointer-events:none}
+
+.tl-dot{position:absolute;left:20px;top:18px;width:18px;height:18px;border-radius:50%;border:3px solid var(--border);background:var(--bg);z-index:1;transition:border-color .3s,box-shadow .3s}
+.tl-item.discovery .tl-dot{border-color:var(--emerald)}
+.tl-item.escalation .tl-dot{border-color:var(--red)}
+.tl-item.investigation .tl-dot{border-color:var(--blue)}
+.tl-item.resolution .tl-dot{border-color:var(--emerald-bright)}
+.tl-item:hover .tl-dot{box-shadow:0 0 12px rgba(16,185,129,.3)}
+
+.tl-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .3s,box-shadow .3s;cursor:pointer}
+.tl-card:hover{border-color:var(--emerald-dim);box-shadow:0 2px 20px rgba(16,185,129,.06)}
+
+.tl-card-header{display:flex;align-items:flex-start;justify-content:space-between;padding:1rem 1.25rem;gap:.75rem}
+.tl-card-header .date{font-size:.75rem;color:var(--text-muted);white-space:nowrap;margin-top:.15rem;flex-shrink:0}
+.tl-card-header .title-wrap{flex:1;min-width:0}
+.tl-card-header .card-title{font-size:.95rem;font-weight:700;color:var(--text);line-height:1.3}
+.tl-card-header .chevron{color:var(--text-muted);transition:transform .3s;flex-shrink:0;margin-top:.1rem;font-size:1.1rem}
+.tl-card.open .chevron{transform:rotate(180deg)}
+
+.tl-card-body{max-height:0;overflow:hidden;transition:max-height .4s ease}
+.tl-card.open .tl-card-body{max-height:600px}
+.tl-card-body-inner{padding:0 1.25rem 1.25rem;font-size:.9rem;color:var(--text-dim);line-height:1.65}
+
+/* Inline character references */
+.char-ref{display:inline-flex;align-items:center;gap:.3rem;font-weight:600;vertical-align:baseline}
+.char-ref svg{vertical-align:middle;flex-shrink:0}
+
+/* Quote blocks inside cards */
+.card-quote{border-left:3px solid var(--emerald-dim);padding:.5rem .75rem;margin:.5rem 0;background:rgba(16,185,129,.04);border-radius:0 6px 6px 0;font-style:italic;color:var(--text);font-size:.85rem}
+
+/* Glossary */
+.glossary{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem;margin:2.5rem auto;max-width:900px}
+.glossary h2{font-size:1.1rem;color:var(--emerald);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.08em;font-family:'DM Sans',sans-serif;font-weight:700}
+.glossary dl{display:grid;grid-template-columns:auto 1fr;gap:.5rem 1.25rem}
+.glossary dt{font-weight:700;color:var(--emerald-bright);font-size:.85rem;white-space:nowrap}
+.glossary dd{color:var(--text-dim);font-size:.85rem;line-height:1.5}
+
+/* Footer */
+.site-footer{text-align:center;padding:2.5rem 1.5rem 3rem;color:var(--text-muted);font-size:.8rem;line-height:1.6}
+.site-footer a{color:var(--emerald);text-decoration:none}
+.site-footer a:hover{text-decoration:underline}
+
+/* Mobile */
+@media(max-width:640px){
+  .hero{padding:2.5rem 1rem 2rem}
+  .char-grid{grid-template-columns:1fr 1fr}
+  .tl-card-header .date{display:block;width:100%;margin-bottom:.25rem}
+  .tl-card-header{flex-wrap:wrap}
+  .glossary dl{grid-template-columns:1fr}
+  .glossary dt{margin-top:.5rem}
+  .tl-card-body .fragment{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>Tracking Down the Source</h1>
+  <p class="subtitle">How 707 Emails Revealed a Six-Year Data Quality Issue</p>
+</section>
+
+<!-- CHARACTER KEY -->
+<div class="container">
+<div class="character-key">
+  <h2>Character Key</h2>
+  <div class="char-grid" id="charGrid"></div>
+</div>
+</div>
+
+<!-- EXECUTIVE SUMMARY -->
+<div class="container">
+<div class="exec-summary">
+  <h2>Executive Summary</h2>
+  <ul>
+    <li><span class="char-ref" data-char="felix">Felix the Fox</span> discovered that FY2013-FY2018 data contained <strong>only long-haul shipment records</strong>, while FY2019 was the first year to include all four record types (maintenance, fuel, long-haul, local delivery).</li>
+    <li><span class="char-ref" data-char="archie">Archie the Hawk</span> traced the root cause to the data warehouse: a default <strong>INNER JOIN</strong> from shipment records Header to Dispatch Detail sub-tables silently filtered results from ~762K to ~15K records, returning only long-haul shipment records.</li>
+    <li><span class="char-ref" data-char="alice">Alice the Owl</span> validated through independent data pulls that corrected queries returned complete data across all record types and fiscal years.</li>
+    <li><span class="char-ref" data-char="harold">Harold the Badger</span> implemented <strong>blind parallel processing</strong> as a standing protocol: two analysts independently pull and reconcile data before any deliverable is released.</li>
+  </ul>
+</div>
+</div>
+
+<!-- FILTERS -->
+<div class="filters">
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="discovery">Discovery</button>
+  <button class="filter-btn" data-filter="escalation">Escalation</button>
+  <button class="filter-btn" data-filter="investigation">Investigation</button>
+  <button class="filter-btn" data-filter="resolution">Resolution</button>
+</div>
+
+<!-- TIMELINE -->
+<div class="container">
+<div class="timeline" id="timeline">
+
+  <!-- DISCOVERY -->
+  <div class="tl-phase">
+    <div class="tl-phase-label discovery">Discovery</div>
+
+    <div class="tl-item discovery" data-phase="discovery">
+      <div class="tl-dot"></div>
+      <div class="tl-card" onclick="toggleCard(this)">
+        <div class="tl-card-header">
+          <div class="title-wrap">
+            <div class="card-title">Data Pull Request Initiated</div>
+          </div>
+          <span class="date">Mar 2020</span>
+          <span class="chevron">&#9662;</span>
+        </div>
+        <div class="tl-card-body">
+          <div class="tl-card-body-inner">
+            <span class="char-ref" data-char="sage">Sage the Heron</span>'s team takes over data operations from a former analyst who left. <span class="char-ref" data-char="goose">Goose</span> requests the team submit a formal data pull request for FY2013-2020 fleet logistics data. <span class="fragment">The previous analyst's code and methodology are poorly documented.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item discovery" data-phase="discovery">
+      <div class="tl-dot"></div>
+      <div class="tl-card" onclick="toggleCard(this)">
+        <div class="tl-card-header">
+          <div class="title-wrap">
+            <div class="card-title">Initial Comparison Reveals Differences</div>
+          </div>
+          <span class="date">May 2020</span>
+          <span class="chevron">&#9662;</span>
+        </div>
+        <div class="tl-card-body">
+          <div class="tl-card-body-inner">
+            <span class="char-ref" data-char="sage">Sage the Heron</span> uploads new pull results. The team notices current data doesn't match previously reported figures. <span class="char-ref" data-char="goose">Goose</span> flags:
+            <div class="card-quote">"The discrepancy is between the older data pulls and the updated pulls."</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item discovery" data-phase="discovery">
+      <div class="tl-dot"></div>
+      <div class="tl-card" onclick="toggleCard(this)">
+        <div class="tl-card-header">
+          <div class="title-wrap">
+            <div class="card-title">New Data Arrives, Numbers Don't Match</div>
+          </div>
+          <span class="date">Jul 2020</span>
+          <span class="chevron">&#9662;</span>
+        </div>
+        <div class="tl-card-body">
+          <div class="tl-card-body-inner">
+            <span class="char-ref" data-char="pip">Pip the Otter</span> begins processing new fiscal year data. Results look fundamentally different from prior years. <span class="char-ref" data-char="sage">Sage</span> asks:
+            <div class="card-quote">"How large are the differences compared to prior years?"</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ESCALATION -->
+  <div class="tl-phase">
+    <div class="tl-phase-label escalation">Escalation</div>
+
+    <div class="tl-item escalation" data-phase="escalation">
+      <div class="tl-dot"></div>
+      <div class="tl-card" onclick="toggleCard(this)">
+        <div class="tl-card-header">
+          <div class="title-wrap">
+            <div class="card-title">Data Errors Formally Identified</div>
+          </div>
+          <span class="date">Aug 2, 2020</span>
+          <span class="chevron">&#9662;</span>
+        </div>
+        <div class="tl-card-body">
+          <div class="tl-card-body-inner">
+            <span class="char-ref" data-char="maple">Maple the Deer</span> and <span class="char-ref" data-char="pip">Pip the Otter</span> document specific structural errors in how record identifiers were combined. <span class="char-ref" data-char="harold">Harold the Badger</span> is notified.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item escalation" data-phase="escalation">
+      <div class="tl-dot"></div>
+      <div class="tl-card" onclick="toggleCard(this)">
+        <div class="tl-card-header">
+          <div class="title-wrap">
+            <div class="card-title">Working Group Meeting &mdash; Deep Dive Assigned</div>
+          </div>
+          <span class="date">Aug 9, 2020</span>
+          <span class="chevron">&#9662;</span>
+        </div>
+        <div class="tl-card-body">
+          <div class="tl-card-body-inner">
+            Internal working group meeting. The term "data errors" is formally adopted. <span class="char-ref" data-char="goose">Goose</span> assigns <span class="char-ref" data-char="pip">Pip</span> and <span class="char-ref" data-char="maple">Maple</span> to:
+            <div class="card-quote">"Do a deep dive into the data errors."</div>
+            <span class="fragment">Plan due by August 11.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item escalation" data-phase="escalation">
+      <div class="tl-dot"></div>
+      <div class="tl-card" onclick="toggleCard(this)">
+        <div class="tl-card-header">
+          <div class="title-wrap">
+            <div class="card-title">Felix's Breakthrough</div>
+          </div>
+          <span class="date">Sep 21, 2020</span>
+          <span class="chevron">&#9662;</span>
+        </div>
+        <div class="tl-card-body">
+          <div class="tl-card-body-inner">
+            <span class="char-ref" data-char="felix">Felix the Fox</span>'s analysis reveals the core issue: the previous data operations team only pulled <strong>"long-haul"</strong> shipment records from FY2013-FY2018. FY2019 was the first year that included all four record types (maintenance, fuel, long-haul, local delivery). <span class="fragment">Six fiscal years of data were structurally different.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item escalation" data-phase="escalation">
+      <div class="tl-dot"></div>
+      <div class="tl-card" onclick="toggleCard(this)">
+        <div class="tl-card-header">
+          <div class="title-wrap">
+            <div class="card-title">Urgent Meeting Called</div>
+          </div>
+          <span class="date">Sep 22, 2020</span>
+          <span class="chevron">&#9662;</span>
+        </div>
+        <div class="tl-card-body">
+          <div class="tl-card-body-inner">
+            <span class="char-ref" data-char="harold">Harold the Badger</span> calls all-hands:
+            <div class="card-quote">"Can we connect to talk about the data pull?"</div>
+            The scope &mdash; all reports using pre-FY2019 data are affected &mdash; becomes clear.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INVESTIGATION -->
+  <div class="tl-phase">
+    <div class="tl-phase-label investigation">Investigation</div>
+
+    <div class="tl-item investigation" data-phase="investigation">
+      <div class="tl-dot"></div>
+      <div class="tl-card" onclick="toggleCard(this)">
+        <div class="tl-card-header">
+          <div class="title-wrap">
+            <div class="card-title">Alice Investigates record types</div>
+          </div>
+          <span class="date">Nov 2020</span>
+          <span class="chevron">&#9662;</span>
+        </div>
+        <div class="tl-card-body">
+          <div class="tl-card-body-inner">
+            <span class="char-ref" data-char="alice">Alice the Owl</span> requests breakdowns by record type and year. The team discovers FY2013-2018 data contains only long-haul shipment records while FY2019 contains all types.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item investigation" data-phase="investigation">
+      <div class="tl-dot"></div>
+      <div class="tl-card" onclick="toggleCard(this)">
+        <div class="tl-card-header">
+          <div class="title-wrap">
+            <div class="card-title">Structural Root Cause Confirmed</div>
+          </div>
+          <span class="date">Mar 2021</span>
+          <span class="chevron">&#9662;</span>
+        </div>
+        <div class="tl-card-body">
+          <div class="tl-card-body-inner">
+            <span class="char-ref" data-char="archie">Archie the Hawk</span> confirms: the data warehouse's default join from shipment records Header to Dispatch Detail sub-tables was an <strong>INNER JOIN</strong>, dropping results from ~762K to ~15K records, returning only long-haul shipment records. <span class="fragment">This silent filter caused six years of structural difference.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item investigation" data-phase="investigation">
+      <div class="tl-dot"></div>
+      <div class="tl-card" onclick="toggleCard(this)">
+        <div class="tl-card-header">
+          <div class="title-wrap">
+            <div class="card-title">Formal Root Cause Analysis</div>
+          </div>
+          <span class="date">Apr 24-25, 2021</span>
+          <span class="chevron">&#9662;</span>
+        </div>
+        <div class="tl-card-body">
+          <div class="tl-card-body-inner">
+            Team conducts formal RCA using "5 Whys" methodology.
+            <div class="card-quote">"There was an ordering of join conditionals that implicitly limited the data."</div>
+            <span class="fragment">Contributing factor: the previous data handler worked in isolation with no parallel verification.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item investigation" data-phase="investigation">
+      <div class="tl-dot"></div>
+      <div class="tl-card" onclick="toggleCard(this)">
+        <div class="tl-card-header">
+          <div class="title-wrap">
+            <div class="card-title">Action Items Documented</div>
+          </div>
+          <span class="date">Jun 7, 2021</span>
+          <span class="chevron">&#9662;</span>
+        </div>
+        <div class="tl-card-body">
+          <div class="tl-card-body-inner">
+            <span class="char-ref" data-char="harold">Harold the Badger</span> documents follow-up: compare current raw data with historical data, examine former analyst's queries, create reference documents.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESOLUTION -->
+  <div class="tl-phase">
+    <div class="tl-phase-label resolution">Resolution</div>
+
+    <div class="tl-item resolution" data-phase="resolution">
+      <div class="tl-dot"></div>
+      <div class="tl-card" onclick="toggleCard(this)">
+        <div class="tl-card-header">
+          <div class="title-wrap">
+            <div class="card-title">Mystery Solved</div>
+          </div>
+          <span class="date">Jul 19, 2021</span>
+          <span class="chevron">&#9662;</span>
+        </div>
+        <div class="tl-card-body">
+          <div class="tl-card-body-inner">
+            <span class="char-ref" data-char="archie">Archie the Hawk</span> confirms definitively:
+            <div class="card-quote">"The default join IS an inner join. Even without a restrictive qualification for record type, linking to the Header Subtables defaults to ONLY returning long-haul shipment records."</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item resolution" data-phase="resolution">
+      <div class="tl-dot"></div>
+      <div class="tl-card" onclick="toggleCard(this)">
+        <div class="tl-card-header">
+          <div class="title-wrap">
+            <div class="card-title">Mitigation Plan: Blind Parallel Processing</div>
+          </div>
+          <span class="date">Jul 24, 2021</span>
+          <span class="chevron">&#9662;</span>
+        </div>
+        <div class="tl-card-body">
+          <div class="tl-card-body-inner">
+            <span class="char-ref" data-char="harold">Harold the Badger</span> proposes <strong>blind parallel processing</strong> &mdash; where data handlers independently conduct pulls and confirm numbers match &mdash; as standard practice across all contracts.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tl-item resolution" data-phase="resolution">
+      <div class="tl-dot"></div>
+      <div class="tl-card" onclick="toggleCard(this)">
+        <div class="tl-card-header">
+          <div class="title-wrap">
+            <div class="card-title">Validation and Resolution</div>
+          </div>
+          <span class="date">Aug-Oct 2021</span>
+          <span class="chevron">&#9662;</span>
+        </div>
+        <div class="tl-card-body">
+          <div class="tl-card-body-inner">
+            <span class="char-ref" data-char="alice">Alice the Owl</span> conducts validation pulls. The state coordinator reviews the mitigation plan. <span class="char-ref" data-char="harold">Harold the Badger</span> presents evidence of the fix. New protocols implemented.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- GLOSSARY -->
+<div class="container">
+<div class="glossary">
+  <h2>Glossary</h2>
+  <dl>
+    <dt>RCA</dt>
+    <dd>Root Cause Analysis — a structured investigation to identify why a problem occurred, going beyond surface symptoms to find the underlying cause.</dd>
+    <dt>5 Whys</dt>
+    <dd>An iterative interrogation technique: ask "why?" five times to drill from a symptom to a root cause. Used in the formal RCA session.</dd>
+    <dt>Blind Parallel Processing</dt>
+    <dd>Two analysts independently perform the same data pull without seeing each other's work, then compare results to verify correctness.</dd>
+    <dt>Inner Join</dt>
+    <dd>A database operation that returns only records matching in both tables. Here, it silently filtered out non-long-haul shipment records by requiring a match in Dispatch Detail sub-tables.</dd>
+    <dt>Honest Broker</dt>
+    <dd>A trusted intermediary who handles sensitive data without direct interest in the outcome, ensuring objectivity in data operations.</dd>
+    <dt>Invoice Type</dt>
+    <dd>The classification of a logistics record — maintenance, fuel, long-haul, or local delivery. The root issue was that only one of four types was being returned.</dd>
+  </dl>
+</div>
+</div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  Generated by Debriefer from 707 email records. All names replaced with animal characters.<br>
+  A key file mapping characters to real identities is kept locally and never uploaded.<br>
+  <a href="https://debriefer.io">&rarr; debriefer.io</a>
+</footer>
+
+<script>
+// Character data
+const characters = {
+  alice:  { name:'Alice the Owl',       animal:'owl',    color:'#a78bfa', desc:'Wise, sees everything' },
+  harold: { name:'Harold the Badger',   animal:'badger', color:'#f59e0b', desc:'Digs into everything' },
+  goose:  { name:'Goose the Goose',     animal:'goose',  color:'#10b981', desc:'Honks when something\'s wrong' },
+  felix:  { name:'Felix the Fox',       animal:'fox',    color:'#ef4444', desc:'Clever, finds patterns' },
+  maple:  { name:'Maple the Deer',      animal:'deer',   color:'#ec4899', desc:'Gentle, thorough' },
+  archie: { name:'Archie the Hawk',     animal:'hawk',   color:'#3b82f6', desc:'Sharp eyes from above' },
+  pip:    { name:'Pip the Otter',       animal:'otter',  color:'#14b8a6', desc:'Playful, dives into data' },
+  sage:   { name:'Sage the Heron',      animal:'heron',  color:'#8b5cf6', desc:'Patient, watches the river' }
+};
+
+// SVG avatar generator
+function avatar(key, size) {
+  size = size || 32;
+  const c = characters[key];
+  if (!c) return '';
+  const r = size / 2;
+  const cx = r, cy = r;
+  const col = c.color;
+  const bg = col + '22';
+  let face = '';
+
+  switch (c.animal) {
+    case 'owl':
+      // Big round eyes, small beak
+      face = `
+        <circle cx="${r*.7}" cy="${r*.85}" r="${r*.22}" fill="none" stroke="${col}" stroke-width="1.5"/>
+        <circle cx="${r*1.3}" cy="${r*.85}" r="${r*.22}" fill="none" stroke="${col}" stroke-width="1.5"/>
+        <circle cx="${r*.7}" cy="${r*.85}" r="${r*.08}" fill="${col}"/>
+        <circle cx="${r*1.3}" cy="${r*.85}" r="${r*.08}" fill="${col}"/>
+        <path d="M${r*.9} ${r*1.15} L${r} ${r*1.3} L${r*1.1} ${r*1.15}" fill="${col}"/>
+        <path d="M${r*.45} ${r*.45} L${r*.6} ${r*.65}" stroke="${col}" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M${r*1.55} ${r*.45} L${r*1.4} ${r*.65}" stroke="${col}" stroke-width="1.5" stroke-linecap="round"/>`;
+      break;
+    case 'badger':
+      // Stripe down face, small eyes, round ears
+      face = `
+        <line x1="${r}" y1="${r*.4}" x2="${r}" y2="${r*1.35}" stroke="${col}" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="${r*.65}" cy="${r*.85}" r="${r*.08}" fill="${col}"/>
+        <circle cx="${r*1.35}" cy="${r*.85}" r="${r*.08}" fill="${col}"/>
+        <ellipse cx="${r*.55}" cy="${r*.45}" rx="${r*.15}" ry="${r*.12}" fill="none" stroke="${col}" stroke-width="1.2"/>
+        <ellipse cx="${r*1.45}" cy="${r*.45}" rx="${r*.15}" ry="${r*.12}" fill="none" stroke="${col}" stroke-width="1.2"/>
+        <ellipse cx="${r}" cy="${r*1.2}" rx="${r*.18}" ry="${r*.1}" fill="${col}" opacity=".5"/>`;
+      break;
+    case 'goose':
+      // Long neck implied, beak, dot eyes
+      face = `
+        <circle cx="${r*.7}" cy="${r*.8}" r="${r*.07}" fill="${col}"/>
+        <circle cx="${r*1.3}" cy="${r*.8}" r="${r*.07}" fill="${col}"/>
+        <path d="M${r*.8} ${r*1.1} L${r} ${r*1.35} L${r*1.2} ${r*1.1}" fill="${col}"/>
+        <path d="M${r*.85} ${r*1.1} L${r*1.15} ${r*1.1}" stroke="${col}" stroke-width="1.5"/>`;
+      break;
+    case 'fox':
+      // Pointy ears, sly eyes, nose
+      face = `
+        <path d="M${r*.4} ${r*.3} L${r*.55} ${r*.65} L${r*.7} ${r*.4}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M${r*1.6} ${r*.3} L${r*1.45} ${r*.65} L${r*1.3} ${r*.4}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linejoin="round"/>
+        <line x1="${r*.6}" y1="${r*.9}" x2="${r*.82}" y2="${r*.85}" stroke="${col}" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="${r*1.4}" y1="${r*.9}" x2="${r*1.18}" y2="${r*.85}" stroke="${col}" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="${r}" cy="${r*1.15}" r="${r*.1}" fill="${col}"/>`;
+      break;
+    case 'deer':
+      // Antlers (simple), big eyes, nose
+      face = `
+        <path d="M${r*.6} ${r*.55} L${r*.5} ${r*.25} L${r*.35} ${r*.15}" fill="none" stroke="${col}" stroke-width="1.3" stroke-linecap="round"/>
+        <path d="M${r*.5} ${r*.25} L${r*.6} ${r*.12}" fill="none" stroke="${col}" stroke-width="1.3" stroke-linecap="round"/>
+        <path d="M${r*1.4} ${r*.55} L${r*1.5} ${r*.25} L${r*1.65} ${r*.15}" fill="none" stroke="${col}" stroke-width="1.3" stroke-linecap="round"/>
+        <path d="M${r*1.5} ${r*.25} L${r*1.4} ${r*.12}" fill="none" stroke="${col}" stroke-width="1.3" stroke-linecap="round"/>
+        <circle cx="${r*.72}" cy="${r*.85}" r="${r*.1}" fill="${col}"/>
+        <circle cx="${r*1.28}" cy="${r*.85}" r="${r*.1}" fill="${col}"/>
+        <ellipse cx="${r}" cy="${r*1.18}" rx="${r*.08}" ry="${r*.06}" fill="${col}"/>`;
+      break;
+    case 'hawk':
+      // Sharp brow, hooked beak, fierce eyes
+      face = `
+        <line x1="${r*.5}" y1="${r*.7}" x2="${r*.78}" y2="${r*.75}" stroke="${col}" stroke-width="1.8" stroke-linecap="round"/>
+        <line x1="${r*1.5}" y1="${r*.7}" x2="${r*1.22}" y2="${r*.75}" stroke="${col}" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="${r*.75}" cy="${r*.85}" r="${r*.07}" fill="${col}"/>
+        <circle cx="${r*1.25}" cy="${r*.85}" r="${r*.07}" fill="${col}"/>
+        <path d="M${r*.92} ${r*1.08} L${r} ${r*1.35} L${r*.95} ${r*1.25}" fill="${col}"/>`;
+      break;
+    case 'otter':
+      // Round face, whiskers, happy eyes
+      face = `
+        <circle cx="${r*.7}" cy="${r*.82}" r="${r*.08}" fill="${col}"/>
+        <circle cx="${r*1.3}" cy="${r*.82}" r="${r*.08}" fill="${col}"/>
+        <ellipse cx="${r}" cy="${r*1.12}" rx="${r*.12}" ry="${r*.08}" fill="${col}" opacity=".6"/>
+        <line x1="${r*.4}" y1="${r*1.05}" x2="${r*.7}" y2="${r}" stroke="${col}" stroke-width="1" stroke-linecap="round"/>
+        <line x1="${r*.4}" y1="${r*1.2}" x2="${r*.7}" y2="${r*1.15}" stroke="${col}" stroke-width="1" stroke-linecap="round"/>
+        <line x1="${r*1.6}" y1="${r*1.05}" x2="${r*1.3}" y2="${r}" stroke="${col}" stroke-width="1" stroke-linecap="round"/>
+        <line x1="${r*1.6}" y1="${r*1.2}" x2="${r*1.3}" y2="${r*1.15}" stroke="${col}" stroke-width="1" stroke-linecap="round"/>`;
+      break;
+    case 'heron':
+      // Long beak, tall, serene eyes
+      face = `
+        <circle cx="${r*.7}" cy="${r*.78}" r="${r*.07}" fill="${col}"/>
+        <circle cx="${r*1.3}" cy="${r*.78}" r="${r*.07}" fill="${col}"/>
+        <path d="M${r*.85} ${r*1}" L${r} ${r*1.45} L${r*1.15} ${r*1}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linejoin="round"/>
+        <line x1="${r*.45}" y1="${r*.4}" x2="${r}" y2="${r*.55}" stroke="${col}" stroke-width="1.2" stroke-linecap="round"/>`;
+      break;
+  }
+
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="${cx}" cy="${cy}" r="${r-1}" fill="${bg}" stroke="${col}" stroke-width="1.5"/>
+    ${face}
+  </svg>`;
+}
+
+// Populate character grid
+(function(){
+  const grid = document.getElementById('charGrid');
+  for (const [key, ch] of Object.entries(characters)) {
+    const el = document.createElement('div');
+    el.className = 'char-item';
+    el.innerHTML = `${avatar(key, 32)}<div><div class="char-name" style="color:${ch.color}">${ch.name}</div><div class="char-desc">${ch.desc}</div></div>`;
+    grid.appendChild(el);
+  }
+})();
+
+// Inject avatars into char-ref spans
+document.querySelectorAll('.char-ref').forEach(el => {
+  const key = el.dataset.char;
+  if (key && characters[key]) {
+    const text = el.textContent;
+    el.innerHTML = avatar(key, 18) + ' <span style="color:' + characters[key].color + '">' + text + '</span>';
+  }
+});
+
+// Toggle card
+function toggleCard(card) {
+  card.classList.toggle('open');
+}
+
+// Filter
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const f = btn.dataset.filter;
+    document.querySelectorAll('.tl-item').forEach(item => {
+      if (f === 'all' || item.dataset.phase === f) {
+        item.classList.remove('hidden');
+      } else {
+        item.classList.add('hidden');
+      }
+    });
+    // Show/hide phase labels
+    document.querySelectorAll('.tl-phase').forEach(phase => {
+      const items = phase.querySelectorAll('.tl-item:not(.hidden)');
+      phase.style.display = items.length ? '' : 'none';
+    });
+  });
+});
+</script>
+</body>
+</html>
