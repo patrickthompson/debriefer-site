@@ -640,37 +640,63 @@
                 <p>Every report, dataset, and submission your team produced — mapped on a timeline with contributors and status.</p>
             </div>
 
-            <div class="tier reveal" style="position: relative; overflow: hidden;">
+            <div class="tier reveal" style="position: relative;">
                 <div class="tier-label">Deliverable 4</div>
                 <div class="tier-title">Inferred Org Chart</div>
-                <p>Who reports to who, who bridges groups, who the bottlenecks are — derived purely from email patterns.</p>
-                <!-- Mini org chart teaser -->
-                <div style="margin-top: 1rem; padding: 1rem; background: rgba(16, 185, 129, 0.04); border-radius: 8px; position: relative;">
-                    <div style="display: flex; justify-content: center; gap: 12px; margin-bottom: 12px;">
-                        <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(167, 139, 250, 0.3); border: 1.5px solid rgba(167, 139, 250, 0.5);"></div>
-                        <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(16, 185, 129, 0.3); border: 1.5px solid rgba(16, 185, 129, 0.5);"></div>
-                        <div style="width: 32px; height: 32px; border-radius: 50%; background: rgba(34, 197, 94, 0.3); border: 1.5px dashed rgba(34, 197, 94, 0.4);"></div>
+                <p>Who reports to who, who bridges groups, who the bottlenecks are — derived purely from email patterns. No survey required.</p>
+                <!-- Visible org chart preview -->
+                <div style="margin-top: 1.5rem; padding: 1.5rem; background: rgba(16, 185, 129, 0.03); border-radius: 8px; border: 1px solid var(--border);">
+                    <!-- Leadership tier -->
+                    <div style="text-align: center; margin-bottom: 0.4rem;">
+                        <span style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-dim);">Leadership</span>
                     </div>
-                    <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 12px;">
-                        <div style="width: 1px; height: 16px; background: rgba(16, 185, 129, 0.2);"></div>
+                    <div style="display: flex; justify-content: center; gap: 24px; margin-bottom: 8px;">
+                        <div style="text-align: center;">
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(167, 139, 250, 0.15); border: 2px solid #a78bfa; margin: 0 auto 4px; display: flex; align-items: center; justify-content: center;"><span style="font-size: 11px; color: #a78bfa; font-weight: 600;">A</span></div>
+                            <div style="font-size: 0.6rem; color: #a78bfa;">Alice</div>
+                            <div style="font-size: 0.5rem; color: var(--text-dim);">455 sent</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(16, 185, 129, 0.15); border: 2px solid #10b981; margin: 0 auto 4px; display: flex; align-items: center; justify-content: center;"><span style="font-size: 11px; color: #10b981; font-weight: 600;">G</span></div>
+                            <div style="font-size: 0.6rem; color: #10b981;">Goose</div>
+                            <div style="font-size: 0.5rem; color: var(--text-dim);">CC'd 265x</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(34, 197, 94, 0.1); border: 2px dashed rgba(34, 197, 94, 0.4); margin: 0 auto 4px; display: flex; align-items: center; justify-content: center;"><span style="font-size: 11px; color: rgba(34, 197, 94, 0.5); font-weight: 600;">C</span></div>
+                            <div style="font-size: 0.6rem; color: rgba(34, 197, 94, 0.5);">Clover</div>
+                            <div style="font-size: 0.5rem; color: var(--text-dim);">departed</div>
+                        </div>
                     </div>
-                    <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 12px;">
-                        <div style="width: 24px; height: 24px; border-radius: 50%; background: rgba(245, 158, 11, 0.3); border: 1.5px solid rgba(245, 158, 11, 0.4);"></div>
-                        <div style="width: 24px; height: 24px; border-radius: 50%; background: rgba(16, 185, 129, 0.3); border: 1.5px solid rgba(16, 185, 129, 0.4);"></div>
+                    <!-- Connector -->
+                    <div style="display: flex; justify-content: center; margin-bottom: 8px;"><div style="width: 1px; height: 14px; background: rgba(16, 185, 129, 0.2);"></div></div>
+                    <!-- Senior tier -->
+                    <div style="text-align: center; margin-bottom: 0.4rem;">
+                        <span style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-dim);">Senior</span>
+                    </div>
+                    <div style="display: flex; justify-content: center; gap: 20px; margin-bottom: 8px;">
+                        <div style="text-align: center;">
+                            <div style="width: 28px; height: 28px; border-radius: 50%; background: rgba(245, 158, 11, 0.15); border: 2px solid #f59e0b; margin: 0 auto 4px; display: flex; align-items: center; justify-content: center;"><span style="font-size: 9px; color: #f59e0b; font-weight: 600;">H</span></div>
+                            <div style="font-size: 0.55rem; color: #f59e0b;">Harold</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="width: 28px; height: 28px; border-radius: 50%; background: rgba(16, 185, 129, 0.15); border: 2px solid #10b981; margin: 0 auto 4px; display: flex; align-items: center; justify-content: center;"><span style="font-size: 9px; color: #10b981; font-weight: 600;">P</span></div>
+                            <div style="font-size: 0.55rem; color: #10b981;">Pip</div>
+                        </div>
+                    </div>
+                    <!-- Connector -->
+                    <div style="display: flex; justify-content: center; margin-bottom: 8px;"><div style="width: 1px; height: 14px; background: rgba(16, 185, 129, 0.15);"></div></div>
+                    <!-- Core tier -->
+                    <div style="text-align: center; margin-bottom: 0.4rem;">
+                        <span style="font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-dim);">Core Team</span>
                     </div>
                     <div style="display: flex; justify-content: center; gap: 10px;">
-                        <div style="width: 1px; height: 16px; background: rgba(16, 185, 129, 0.15);"></div>
+                        <div style="width: 22px; height: 22px; border-radius: 50%; background: rgba(6, 182, 212, 0.15); border: 1.5px solid #06b6d4; display: flex; align-items: center; justify-content: center;"><span style="font-size: 8px; color: #06b6d4;">W</span></div>
+                        <div style="width: 22px; height: 22px; border-radius: 50%; background: rgba(249, 115, 22, 0.15); border: 1.5px solid #f97316; display: flex; align-items: center; justify-content: center;"><span style="font-size: 8px; color: #f97316;">S</span></div>
+                        <div style="width: 22px; height: 22px; border-radius: 50%; background: rgba(236, 72, 153, 0.15); border: 1.5px solid #ec4899; display: flex; align-items: center; justify-content: center;"><span style="font-size: 8px; color: #ec4899;">M</span></div>
+                        <div style="width: 22px; height: 22px; border-radius: 50%; background: rgba(239, 68, 68, 0.15); border: 1.5px solid #ef4444; display: flex; align-items: center; justify-content: center;"><span style="font-size: 8px; color: #ef4444;">F</span></div>
                     </div>
-                    <div style="display: flex; justify-content: center; gap: 6px;">
-                        <div style="width: 18px; height: 18px; border-radius: 50%; background: rgba(6, 182, 212, 0.2); border: 1px solid rgba(6, 182, 212, 0.3);"></div>
-                        <div style="width: 18px; height: 18px; border-radius: 50%; background: rgba(249, 115, 22, 0.2); border: 1px solid rgba(249, 115, 22, 0.3);"></div>
-                        <div style="width: 18px; height: 18px; border-radius: 50%; background: rgba(236, 72, 153, 0.2); border: 1px solid rgba(236, 72, 153, 0.3);"></div>
-                        <div style="width: 18px; height: 18px; border-radius: 50%; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3);"></div>
-                    </div>
-                    <!-- Blur overlay -->
-                    <div style="position: absolute; inset: 0; background: rgba(10, 15, 13, 0.5); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                        <span style="font-size: 0.75rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500;">Included in package</span>
-                    </div>
+                    <!-- Caption -->
+                    <p style="font-size: 0.65rem; color: var(--text-dim); text-align: center; margin: 1rem 0 0; line-height: 1.5;">Hierarchy inferred from 7,163 emails. Clover's departure left a 127-connection gap — the root cause went undetected for 3 years.</p>
                 </div>
             </div>
 
